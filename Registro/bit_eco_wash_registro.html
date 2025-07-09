@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro BIT Eco Wash</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1rem;
+      background: #f2f2f2;
+    }
+    h2 {
+      text-align: center;
+      color: #01588e;
+    }
+    form {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #01588e;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #003f66;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Registro de Turno - BIT Eco Wash</h2>
+  <form id="registroForm">
+    <label for="nombre">Nombre del lavador:</label>
+    <input type="text" id="nombre" name="nombre" required>
+
+    <label for="lavados" class="hidden" id="lavadosLabel">Cantidad de lavados:</label>
+    <input type="number" id="lavados" name="lavados" min="0" class="hidden">
+
+    <input type="hidden" id="latitud" name="latitud">
+    <input type="hidden" id="longitud" name="longitud">
+    <input type="hidden" id="accion" name="accion">
+
+    <button type="button" onclick="registrar('Entrada')">Entrada</button>
+    <button type="button" onclick="registrar('Salida')">Salida</button>
+  </form>
+
+  <p id="respuesta" style="text-align:center; font-weight:bold;"></p>
+
+  <script>
+    function registrar(tipo) {
+      document.getElementById("accion").value = tipo;
+      const lavadosInput = document.getElementById("lavados");
+      const lavadosLabel = document.getElementById("lavadosLabel");
+
+      if (tipo === "Salida") {
+        lavadosInput.classList.remove("hidden");
+        lavadosLabel.classList.remove("hidden");
+        if (!lavadosInput.value) {
+          alert("Por favor ingresá la cantidad de lavados.");
+          return;
+        }
+      } else {
+        lavadosInput.classList.add("hidden");
+        lavadosLabel.classList.add("hidden");
+      }
+
+      if (!navigator.geolocation) {
+        alert("Tu navegador no soporta geolocalización.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(pos => {
+        document.getElementById("latitud").value = pos.coords.latitude;
+        document.getElementById("longitud").value = pos.coords.longitude;
+
+        const data = new FormData(document.getElementById("registroForm"));
+        fetch("https://script.google.com/macros/s/AKfycbxXMVGGQ-zEqtrSHKwvMMOoI4pAyDUaW4vfgI1U74pBaPN3NweD7vpKIDMbi6NQsH7nyQ/exec", {
+          method: "POST",
+          body: data
+        })
+        .then(res => res.text())
+        .then(msg => {
+          document.getElementById("respuesta").textContent = msg;
+          document.getElementById("registroForm").reset();
+        })
+        .catch(err => {
+          document.getElementById("respuesta").textContent = "Error al enviar los datos.";
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>
